@@ -1,28 +1,30 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using BCL.Communicator.Messages;
 
 namespace BCL.Communicator;
 
-/// <summary>
-/// Disposable wrapper class for ClientWebSocket
-/// </summary>
-/// <param name="uri">The server URI.</param>
-public sealed class WebSocketClient(string uri) : IDisposable
+internal sealed class WebSocketClient(string uri) : IDisposable
 {
     private ClientWebSocket _webSocket = new();
     private readonly Uri _serverUri = new(uri);
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private bool _isDisposed;
 
-    /// <summary>
-    /// Starts the WebSocket client and manages it's lifetime.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task StartAsync()
     {
         await ConnectAsync();
+    }
+
+    public Task SendMessage(MessageBase data, CancellationToken cancellation)
+    {
+        var encoded = JsonSerializer.SerializeToUtf8Bytes(data);
+        var buffer = new ArraySegment<byte>(encoded, 0, encoded.Length);
+        return _webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation);
     }
 
     private async Task ConnectAsync()
@@ -75,7 +77,7 @@ public sealed class WebSocketClient(string uri) : IDisposable
                 }
                 else
                 {
-                    var message = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     CommunicatorPlugin.Logger?.LogWarning($"Received: {message}");
                 }
             }
@@ -91,17 +93,11 @@ public sealed class WebSocketClient(string uri) : IDisposable
         }
     }
 
-    /// <summary>
-    /// Method to stop the WebSocketClient.
-    /// </summary>
     public void Stop()
     {
         _cancellationTokenSource.Cancel();
     }
 
-    /// <summary>
-    /// Properly disposes of resources.
-    /// </summary>
     public void Dispose()
     {
         if (_isDisposed) return;

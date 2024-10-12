@@ -1,14 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BCL.Communicator.Messages;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using UnityEngine;
 
 namespace BCL.Communicator;
 
 /// <summary>
 /// Plugin for Communicator Mod.
 /// </summary>
-[BepInAutoPlugin]
+[BepInAutoPlugin("dev.xtracube.communicator", "BCL Communicator", "1.0.0")]
 [BepInProcess("Among Us.exe")]
 public partial class CommunicatorPlugin : BasePlugin
 {
@@ -25,12 +30,44 @@ public partial class CommunicatorPlugin : BasePlugin
     /// </summary>
     public static ManualLogSource? Logger { get; private set; }
 
-    private string WebSocketServerAddress { get; set; } = "http://localhost:8080";
+    private string WebSocketServerAddress { get; set; } = "ws://localhost:8080";
+
+    private static WebSocketClient? WebSocketClient { get; set; }
 
     /// <inheritdoc />
     public override void Load()
     {
-        var webSocket = new WebSocketClient(WebSocketServerAddress);
-        Task.Run(webSocket.StartAsync);
+        IL2CPPChainloader.Instance.Finished += () =>
+        {
+            if (IL2CPPChainloader.Instance.Plugins.Values.Any(x=>x.Dependencies.Any(y=>y.DependencyGUID==Id)))
+            {
+                WebSocketClient = new WebSocketClient(WebSocketServerAddress);
+                Task.Run(WebSocketClient.StartAsync);
+            }
+            else
+            {
+                Logger.LogInfo("No dependencies found, skipping WebSocketClient initialization.");
+            }
+        };
+
+        AddComponent<CommunicatorComponent>();
+    }
+
+    private sealed class CommunicatorComponent : MonoBehaviour
+    {
+        public CommunicatorComponent(IntPtr ptr) : base(ptr)
+        {
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                Logger?.LogWarning("F2 key pressed.");
+                var message = new ChannelMessage(0, new ChannelMessage.ChannelValue(["default"], ["default"]));
+
+                WebSocketClient?.SendMessage(message, CancellationToken.None);
+            }
+        }
     }
 }
