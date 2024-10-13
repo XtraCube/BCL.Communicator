@@ -32,7 +32,7 @@ public partial class CommunicatorPlugin : BasePlugin
 
     private string WebSocketServerAddress { get; set; } = "ws://localhost:8080";
 
-    private static WebSocketClient? WebSocketClient { get; set; }
+    internal static WebSocketClient? WebSocketClient { get; set; }
 
     /// <inheritdoc />
     public override void Load()
