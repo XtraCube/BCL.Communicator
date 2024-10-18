@@ -59,6 +59,7 @@ public partial class CommunicatorPlugin : BasePlugin
         {
         }
 
+        /*
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F2))
@@ -68,6 +69,6 @@ public partial class CommunicatorPlugin : BasePlugin
 
                 WebSocketClient?.SendMessage(message, CancellationToken.None);
             }
-        }
+        }*/
     }
 }
