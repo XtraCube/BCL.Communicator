@@ -22,6 +22,11 @@ internal sealed class WebSocketClient(string uri) : IDisposable
 
     public Task SendMessage(MessageBase data, CancellationToken cancellation)
     {
+        if (_webSocket.State != WebSocketState.Open)
+        {
+            CommunicatorPlugin.Logger?.LogWarning("WebSocket connection is not open.");
+            return Task.CompletedTask;
+        }
         var encoded = JsonSerializer.SerializeToUtf8Bytes(data);
         var buffer = new ArraySegment<byte>(encoded, 0, encoded.Length);
         return _webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation);
