@@ -49,26 +49,5 @@ public partial class CommunicatorPlugin : BasePlugin
                 Logger.LogInfo("No dependencies found, skipping WebSocketClient initialization.");
             }
         };
-
-        AddComponent<CommunicatorComponent>();
-    }
-
-    private sealed class CommunicatorComponent : MonoBehaviour
-    {
-        public CommunicatorComponent(IntPtr ptr) : base(ptr)
-        {
-        }
-
-        /*
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                Logger?.LogWarning("F2 key pressed.");
-                var message = new ChannelMessage(0, new ChannelMessage.ChannelValue(["default"], ["default"]));
-
-                WebSocketClient?.SendMessage(message, CancellationToken.None);
-            }
-        }*/
     }
 }

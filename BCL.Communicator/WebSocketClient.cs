@@ -17,7 +17,7 @@ internal sealed class WebSocketClient(string uri) : IDisposable
 
     public async Task StartAsync()
     {
-        await ConnectAsync();
+        await ReconnectAsync();
     }
 
     public Task SendMessage(MessageBase data, CancellationToken cancellation)
