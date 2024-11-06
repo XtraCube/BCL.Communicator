@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using BCL.Communicator;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using UnityEngine;
+using Random = System.Random;
 
 namespace ExampleIntegratedMod;
 
@@ -43,6 +45,12 @@ public partial class ExampleIntegratedPlugin : BasePlugin
             {
                 CommunicatorPlugin.Logger.LogInfo("Resetting channels for local player.");
                 PlayerControl.LocalPlayer.ResetChannels();
+            }
+            if (Input.GetKeyDown(KeyCode.F4))
+            {
+                var player = PlayerControl.AllPlayerControls.ToArray()[Random.Shared.Next(PlayerControl.AllPlayerControls.Count)];
+                player.SetReferencePlayer();
+                CommunicatorPlugin.Logger.LogInfo($"Setting reference player to {player.Data.PlayerName}");
             }
         }
     }

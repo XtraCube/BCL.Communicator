@@ -29,4 +29,15 @@ public static class Extensions
     {
         player.SetChannels(["default"], ["default"]);
     }
+
+    /// <summary>
+    /// Sets the target/reference player for BCL.
+    /// </summary>
+    /// <param name="player">The player to track/reference.</param>
+    public static void SetReferencePlayer(this PlayerControl player)
+    {
+        CommunicatorPlugin.WebSocketClient?.SendMessage(
+            new ReferencePlayerMessage(player.PlayerId),
+            CancellationToken.None);
+    }
 }
